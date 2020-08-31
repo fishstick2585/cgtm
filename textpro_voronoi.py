@@ -1,7 +1,7 @@
 import numpy as np
 import re
 # Read list of resids; split into array of lists and convert to integers
-input_file2 = open('processhop.out','r')
+input_file2 = open('processHop.out','r')
 full_file_contents = input_file2.read()
 rts_intermed = re.split('First shell: |\nSecond shell: |\n', full_file_contents)
 #for i in lines_of_fie:
