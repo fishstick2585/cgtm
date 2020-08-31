@@ -1,5 +1,7 @@
 # cgtm
 coarse grained transition matrix
+Included: Sample pdb, processHop.out, and rts_fs.txt output. Not included: Sample trajectory. 
+
 First: Voronoi 
 You need:
 1.	Voronoi package
