@@ -17,7 +17,7 @@ at2pt_var_dppc = var(at2_dppc_fs);
 at2pt_var_chol = var(at2_chol_fs);
 at2pt_var_dopc = var(at2_dopc_fs);
 
-% Compile statistics, only for border length 2 Ang.
+% Compile statistics, only for border length 2 Ang. Voronoi spec
 fs_occupancy_by_lip = [at2_dppc_fs, at2_chol_fs,at2_dopc_fs ];
 fs_occupancy_by_lip_avg_2Ang = sum(fs_occupancy_by_lip,1)/ts
 fs_occupancy_avg_tot_2Ang = sum(fs_occupancy_by_lip_avg_2Ang,2)
@@ -27,7 +27,17 @@ fs_occupancy = sum(fs_occupancy_by_lip,2);
 % First compute total 1st shell occupancy for each edge length
 at2_fs = at2_dppc_fs + at2_chol_fs + at2_dopc_fs;
 
-% Rounding scheme and possible occupied states
+% Rounding scheme and possible occupied states; this does NOT include possibility of 0 chol because 
+% at least 1 chol remained bound to agonst during entire simulation. Need to adjust
+% if lipid types can have 0 occupancy. 
+
+% First: This section makes a matrix of all possible states, defined as percentages 0 - 100 or 5 - 100 in increments of 5.
+% It considers 3 lipid types. Adapt to fit your system. Or rewrite if you can find an efficient way.
+% This runs really fast because it first creates a maxtrix of possible states, then eliminates redundancy and labels
+% each possible state with a number. Matlab has functions that automatically generate this sort of matrix,
+% but they take a lot longer to run.
+% ( also, looking at this now, it looks like I made a matrix for all possible states in increments of 1 percent, 
+% so I could change the graining later if I wanted. )
 percent_dppc_int = ones(10000,1);
 for i = 1:1:100,
     q = (i - 1)*100 + 1;
@@ -55,16 +65,18 @@ Tot = tot;
 Tot(tot>100) = 0;
 Tot(tot<100) = 0;
 [fs_comp_ele] = find(Tot==100);
-% fs_comp are the bins of 1st shell percentage.
+% fs_comp is a non-redundant matrix of possible states.
 fs_comp = [percent_dppc(fs_comp_ele), percent_chol(fs_comp_ele), percent_dopc(fs_comp_ele)];
 
-% Now compute 1st shell percentage from at2_fs_whole and at2_fs:
+% Now compute 1st shell percentage from at2_fs_whole and at2_fs; a time series of first shell
+% occupancy correponding to a given possible state:
 at2_fs = at2_dppc_fs + at2_chol_fs + at2_dopc_fs;
 percent_dppc_column = at2_fs_whole(:,1)./at2_fs*100;
 percent_chol_column = at2_fs_whole(:,2)./at2_fs*100;
 percent_dopc_column = at2_fs_whole(:,3)./at2_fs*100;
 
-% Change rounding scheme here. The correction for number of states will be
+% Below rounds your time series of states to 5% increments.
+% You can adjust this to as low as 1%, and the correction for number of states will be
 % automatic.
 percent_dppc_column_int = round(percent_dppc_column./5)*5;
 percent_chol_column_int = round(percent_chol_column./5)*5;
@@ -108,6 +120,8 @@ for i = 1:ts,
       c = 10*rem(percent_dopc_column(i)*.1,1);
       c = round(c);
       d = [a,b,c];
+      % Here, if rounding up or down is needed to force a total equal to 100%, 
+      % the lipid with a value closest to an integer is selected and rounded.
       ind = find(d==1|d==2|d==6|d==7);
       ind2 = find(max(d(ind)));
       if length(ind) == 2,
