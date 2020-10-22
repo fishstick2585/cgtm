@@ -1,3 +1,13 @@
+% cgtm1.m has 4 parts:
+% 1. Read Voronoi output "rts_fs.txt" to determine number of each lipid type in designated solvation shell.
+%      "at2_dppc_fs", for example, is a time series of the number of DPPC molecules in the first shell.
+% 2. Create a list of possible occupied states. Example: 35 15 50 for 35% 15% 50% of a given lipid type. Assign each state a number.
+%      "fs_comp" is a non-redundant list of possible states, rounded to 1%. Thus, all the 5% states are included in the list.
+% 3. Bin Voronoi output into states. This involves rounding with the contrataint that percentages equal 100%. 
+%      Result is a time series of states: "states_in_ts".
+% 4. Compute occupation probability from time series of states.
+%.     "state_prob" is a matrix of occupation probabilities. "states_label" shows what percentages of each lipid type correspond to which numbered state.
+
 % Average 1st shell occupancy as function of minimum Voronoi border l
 at2 = readtable('rts_fs.txt');
 at2_dppc_fs = at2{:,1};
